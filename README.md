@@ -59,12 +59,10 @@ This file contains SQL scripts for:
   )
   GROUP BY token, date
 ),
-
 tokens AS (
   SELECT COUNT(DISTINCT token) as token_count
   FROM daily_prices
 ),
-
 portfolio_allocation AS (
   SELECT 
     daily_prices.*,
@@ -72,7 +70,6 @@ portfolio_allocation AS (
     ROUND((10000.0 / token_count) / FIRST_VALUE(daily_price) OVER (PARTITION BY token ORDER BY date), 6) as token_quantity
   FROM daily_prices, tokens
 ),
-
 daily_values AS (
   SELECT
     date,
@@ -83,7 +80,6 @@ daily_values AS (
     ROUND(((daily_price - LAG(daily_price) OVER (PARTITION BY token ORDER BY date)) / LAG(daily_price) OVER (PARTITION BY token ORDER BY date)) * 100, 2) as daily_return
   FROM portfolio_allocation
 )
-
 SELECT 
     date,
     ROUND(SUM(position_value), 2) as total_portfolio_value,
@@ -91,57 +87,7 @@ SELECT
     GROUP_CONCAT(token || ': $' || position_value) as token_values
 FROM daily_values
 GROUP BY date
-ORDER BY date;
-  ```
-
-- **Top Performers for each day**:
-  ```sql
-  WITH DailyPerformance AS (
-    SELECT
-        token,
-        date,
-        MIN(open) AS open_price,
-        MAX(close) AS close_price
-    FROM (
-        SELECT
-            token,
-            date,
-            time,
-            FIRST_VALUE(open) OVER (PARTITION BY token, date ORDER BY time) AS open,
-            LAST_VALUE(close) OVER (PARTITION BY token, date ORDER BY time ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS close
-        FROM OHLC
-    )
-    GROUP BY token, date
-),
-PerformanceCalculation AS (
-    SELECT
-        token,
-        date,
-        open_price,
-        close_price,
-        ((close_price - open_price) / open_price) * 100 AS percentage_increase
-    FROM DailyPerformance
-),
-TopPerformance AS (
-    SELECT
-        date,
-        token,
-        open_price,
-        close_price,
-        percentage_increase,
-        RANK() OVER (PARTITION BY date ORDER BY percentage_increase DESC) AS rank
-    FROM PerformanceCalculation
-)
-SELECT
-    date AS "Date",
-    UPPER(SUBSTR(token, 1, 1)) || LOWER(SUBSTR(token, 2)) AS "Token",
-    open_price AS "Open Price",
-    close_price AS "Close Price",
-    percentage_increase AS "Percentage Increase"
-FROM TopPerformance
-WHERE rank = 1
-ORDER BY date;
-  ```
+ORDER BY date; ```
 
 ### 3. **Dashboard.png**
 A Power BI dashboard that visualizes:
