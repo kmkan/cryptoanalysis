@@ -1,8 +1,8 @@
 # Cryptocurrency Portfolio Analysis 
 
-This repository presents a **Crypto Portfolio Analysis Dashboard** built using **Power BI**, integrating real-time cryptocurrency data, **SQL-based** analytics, and portfolio modeling. The project demonstrates an end-to-end workflow for portfolio analysis, including data fetching, processing, and visualization. It specifically models a portfolio that **tracks 10 of the top 20 cryptocurrencies, with an even allocation of a $10,000 portfolio over a 7-day period.**
+This repository presents a **Cryptocurrency Portfolio Analysis Dashboard** built using **Power BI**, integrating real-time cryptocurrency data, **SQL-based** analytics, and portfolio modeling. The project demonstrates an end-to-end workflow for portfolio analysis, including data fetching, processing, and visualization. It specifically models a portfolio that **tracks 10 of the top 20 cryptocurrencies, with an even allocation of a $10,000 portfolio over 7 days.**
 
-![Crypto Portfolio Analysis](Dashboard.png)
+![Cryptocurrency Portfolio Analysis](Dashboard.png)
 
 ---
 
