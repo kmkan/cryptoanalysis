@@ -9,7 +9,7 @@ This repository presents a **Crypto Portfolio Analysis Dashboard** built using *
 ## Features
 
 - **Interactive Dashboard**:
-  - Displays total returns, percentage returns, and daily returns of the portfolio.
+  - Displays the portfolio's total returns, percentage returns, and daily returns.
   - Visualizes key metrics such as:
     - Portfolio performance by token.
     - Percentage gains across tokens.
@@ -40,10 +40,16 @@ This file contains SQL scripts for:
 - Computing total returns over 7 days for each token.
 - Measuring average volatility across tokens.
 
+Here’s the **properly formatted section** for your README that you can copy-paste directly:
+
+---
+
 #### Example Queries:
+
 - **Portfolio Value**:
-  ```sql
-  WITH daily_prices AS (
+
+```sql
+WITH daily_prices AS (
   -- Get first price of each day for each token
   SELECT 
     token,
@@ -60,10 +66,12 @@ This file contains SQL scripts for:
   GROUP BY token, date
 ),
 tokens AS (
+  -- Get the count of distinct tokens for portfolio allocation
   SELECT COUNT(DISTINCT token) as token_count
   FROM daily_prices
 ),
 portfolio_allocation AS (
+  -- Allocate $10,000 evenly across all tokens and calculate quantities
   SELECT 
     daily_prices.*,
     ROUND(10000.0 / token_count, 2) as initial_allocation,
@@ -71,6 +79,7 @@ portfolio_allocation AS (
   FROM daily_prices, tokens
 ),
 daily_values AS (
+  -- Calculate the daily value and return for each token
   SELECT
     date,
     token,
@@ -80,6 +89,7 @@ daily_values AS (
     ROUND(((daily_price - LAG(daily_price) OVER (PARTITION BY token ORDER BY date)) / LAG(daily_price) OVER (PARTITION BY token ORDER BY date)) * 100, 2) as daily_return
   FROM portfolio_allocation
 )
+-- Compute the total portfolio value and token-wise details for each day
 SELECT 
     date,
     ROUND(SUM(position_value), 2) as total_portfolio_value,
@@ -87,7 +97,8 @@ SELECT
     GROUP_CONCAT(token || ': $' || position_value) as token_values
 FROM daily_values
 GROUP BY date
-ORDER BY date; ```
+ORDER BY date;
+```
 
 ### 3. **Dashboard.png**
 A Power BI dashboard that visualizes:
