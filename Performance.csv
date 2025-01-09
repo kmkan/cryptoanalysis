@@ -1,0 +1,8 @@
+date,total_portfolio_value,avg_daily_return,token_values
+2024-12-31,10000.05,,"bitcoin: $1000.05,cardano: $1000.0,chainlink: $1000.0,dogecoin: $1000.0,ethereum: $1000.0,litecoin: $1000.0,polkadot: $1000.0,ripple: $1000.0,solana: $1000.0,sui: $1000.0"
+2025-01-01,9861.02,-1.39,"bitcoin: $996.49,cardano: $977.86,chainlink: $954.39,dogecoin: $994.86,ethereum: $986.02,litecoin: $1017.79,polkadot: $976.64,ripple: $995.24,solana: $989.38,sui: $972.35"
+2025-01-02,10214.51,3.6,"bitcoin: $1001.47,cardano: $1056.14,chainlink: $1019.48,dogecoin: $1014.49,ethereum: $985.05,litecoin: $1052.79,polkadot: $1018.98,ripple: $1100.0,solana: $984.54,sui: $981.57"
+2025-01-03,10570.09,3.5,"bitcoin: $1034.3,cardano: $1105.94,chainlink: $1053.68,dogecoin: $1062.08,ethereum: $1019.37,litecoin: $1042.31,polkadot: $1048.18,ripple: $1142.86,solana: $1056.76,sui: $1004.61"
+2025-01-04,11303.72,6.94,"bitcoin: $1042.91,cardano: $1259.07,chainlink: $1126.84,dogecoin: $1180.33,ethereum: $1063.14,litecoin: $1114.87,polkadot: $1128.47,ripple: $1171.43,solana: $1103.76,sui: $1112.9"
+2025-01-05,11341.68,0.37,"bitcoin: $1040.77,cardano: $1234.88,chainlink: $1123.52,dogecoin: $1201.15,ethereum: $1068.13,litecoin: $1097.47,polkadot: $1122.63,ripple: $1152.38,solana: $1100.29,sui: $1200.46"
+2025-01-06,11320.14,-0.21,"bitcoin: $1039.22,cardano: $1259.07,chainlink: $1109.26,dogecoin: $1194.37,ethereum: $1068.98,litecoin: $1112.99,polkadot: $1109.49,ripple: $1138.1,solana: $1085.9,sui: $1202.76"

@@ -1,0 +1,157 @@
+-- SQL to get the top performers for each day
+WITH DailyPerformance AS (
+    SELECT
+        token,
+        date,
+        MIN(open) AS open_price,
+        MAX(close) AS close_price
+    FROM (
+        SELECT
+            token,
+            date,
+            time,
+            FIRST_VALUE(open) OVER (PARTITION BY token, date ORDER BY time) AS open,
+            LAST_VALUE(close) OVER (PARTITION BY token, date ORDER BY time ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS close
+        FROM OHLC
+    )
+    GROUP BY token, date
+),
+PerformanceCalculation AS (
+    SELECT
+        token,
+        date,
+        open_price,
+        close_price,
+        ((close_price - open_price) / open_price) * 100 AS percentage_increase
+    FROM DailyPerformance
+),
+TopPerformance AS (
+    SELECT
+        date,
+        token,
+        open_price,
+        close_price,
+        percentage_increase,
+        RANK() OVER (PARTITION BY date ORDER BY percentage_increase DESC) AS rank
+    FROM PerformanceCalculation
+)
+SELECT
+    date AS "Date",
+    UPPER(SUBSTR(token, 1, 1)) || LOWER(SUBSTR(token, 2)) AS "Token",
+    open_price AS "Open Price",
+    close_price AS "Close Price",
+    percentage_increase AS "Percentage Increase"
+FROM TopPerformance
+WHERE rank = 1
+ORDER BY date;
+
+
+-- SQL to get the daily value of portfolio
+WITH daily_prices AS (
+  -- Get first price of each day for each token
+  SELECT 
+    token,
+    date,
+    FIRST_VALUE(open) OVER (PARTITION BY token, date ORDER BY time) as daily_price
+  FROM (
+    SELECT 
+      token,
+      substr(date, 1, 10) as date,
+      time,
+      open
+    FROM OHLC
+  )
+  GROUP BY token, date
+),
+
+tokens AS (
+  -- Get distinct tokens to calculate equal portfolio allocation
+  SELECT COUNT(DISTINCT token) as token_count
+  FROM daily_prices
+),
+
+portfolio_allocation AS (
+  -- Calculate per-token allocation from $10000 portfolio
+  SELECT 
+    daily_prices.*,
+    ROUND(10000.0 / token_count, 2) as initial_allocation,
+    ROUND((10000.0 / token_count) / FIRST_VALUE(daily_price) OVER (PARTITION BY token ORDER BY date), 6) as token_quantity
+  FROM daily_prices, tokens
+),
+
+daily_values AS (
+  -- Calculate daily value of each token position
+  SELECT
+    date,
+    token,
+    daily_price,
+    token_quantity,
+    ROUND(token_quantity * daily_price, 2) as position_value,
+    ROUND(((daily_price - LAG(daily_price) OVER (PARTITION BY token ORDER BY date)) / LAG(daily_price) OVER (PARTITION BY token ORDER BY date)) * 100, 2) as daily_return
+  FROM portfolio_allocation
+)
+
+SELECT 
+    date,
+    ROUND(SUM(position_value), 2) as total_portfolio_value,
+    ROUND(AVG(daily_return), 2) as avg_daily_return,
+    GROUP_CONCAT(token || ': $' || position_value) as token_values
+FROM daily_values
+GROUP BY date
+ORDER BY date;
+
+-- SQL to get total return for each token over 7 days
+WITH StartEndPrices AS (
+    SELECT 
+        token,
+        (SELECT open 
+         FROM OHLC t2 
+         WHERE t2.token = t1.token 
+         AND t2.date = '2024-12-31' 
+         AND t2.time = '00:00:00') as start_price,
+        (SELECT close 
+         FROM OHLC t2 
+         WHERE t2.token = t1.token 
+         AND t2.date = '2025-01-06' 
+         AND t2.time = '20:00:00') as end_price
+    FROM OHLC t1
+    GROUP BY token
+)
+SELECT 
+    token,
+    start_price,
+    end_price,
+    ROUND(((end_price - start_price) / start_price * 100), 2) as percent_gain
+FROM StartEndPrices
+ORDER BY percent_gain DESC;
+
+-- SQL to get the average volatility for each token
+WITH daily_stats AS (
+    SELECT 
+        token,
+        substr(date, 1, 10) as date,
+        MAX(high) as daily_high,
+        MIN(low) as daily_low,
+        AVG((high + low) / 2) as daily_avg_price
+    FROM WhaleAnalysis
+    GROUP BY token, substr(date, 1, 10)
+),
+
+volatility_calc AS (
+    -- Calculate daily volatility as (High-Low)/Average Price * 100
+    SELECT 
+        token,
+        date,
+        ROUND(((daily_high - daily_low) / daily_avg_price * 100), 2) as daily_volatility
+    FROM daily_stats
+)
+
+SELECT 
+    token,
+    ROUND(AVG(daily_volatility), 2) as avg_volatility_percentage,
+    ROUND(MIN(daily_volatility), 2) as min_daily_volatility,
+    ROUND(MAX(daily_volatility), 2) as max_daily_volatility,
+    COUNT(*) as days_analyzed
+FROM volatility_calc
+GROUP BY token
+ORDER BY avg_volatility_percentage DESC;
